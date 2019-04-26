@@ -56,7 +56,7 @@ export default {
   */
   async deviceHasPlayServices(): ?boolean {
     if (Platform.OS === 'android' || (Platform.isTV && !Platform.isTVOS)) {
-      return await GoogleCast.deviceHasPlayServices();
+      return GoogleCast.deviceHasPlayServices();
     }
 
     return null;
