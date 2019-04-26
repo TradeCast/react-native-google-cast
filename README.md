@@ -227,6 +227,7 @@ GoogleCast.castMedia({
 - `GoogleCast.endSession(stopCasting)`
 - `GoogleCast.initChannel('urn:x-cast:...')` - initialize custom channel for communication with Cast receiver app. Once you do this, you can subscribe to `CHANNEL_*` events.
 - `GoogleCast.sendMessage('urn:x-cast:...', message)` - send message over the custom channel
+- `GoogleCast.deviceHasPlayServices()` - Check if the Android device has the Google Play Service installed (returns null on non Android devices).
 
 ## Components
 

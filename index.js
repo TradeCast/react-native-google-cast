@@ -51,6 +51,17 @@ export default {
     return GoogleCast.castMedia(params)
   },
   /**
+  * Function that checks if a device has the Google Play Service installed and up-to-date
+  * @return {?boolean}
+  */
+  async deviceHasPlayServices(): ?boolean {
+    if (Platform.OS === 'android' || (Platform.isTV && !Platform.isTVOS)) {
+      return await GoogleCast.deviceHasPlayServices();
+    }
+
+    return null;
+  },
+  /**
    * Ends the current session.
    *
    * This is an asynchronous operation.
@@ -92,7 +103,6 @@ export default {
   sendMessage(namespace: string, message: string) {
     return GoogleCast.sendMessage(message, namespace)
   },
-
   // TODO use the same native event interface instead of hacking it here
   EventEmitter:
     Platform.OS === 'ios'
