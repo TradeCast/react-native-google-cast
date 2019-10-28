@@ -1,3 +1,5 @@
+// @flow
+
 import {
   DeviceEventEmitter,
   NativeEventEmitter,
@@ -10,21 +12,41 @@ const { RNGoogleCast: GoogleCast } = NativeModules
 import CastButton from './CastButton'
 export { CastButton }
 
-type CastState = 'NoDevicesAvailable' | 'NotConnected' | 'Connecting' | 'Connected';
+type CastDevice = {
+  id: string,
+  version: string,
+  name: string,
+  model: string,
+}
+
+type CastState =
+  | 'NoDevicesAvailable'
+  | 'NotConnected'
+  | 'Connecting'
+  | 'Connected'
 
 export default {
+  getCastDevice(): Promise<CastDevice> {
+    return GoogleCast.getCastDevice()
+  },
   getCastState(): Promise<CastState> {
-    return GoogleCast.getCastState().then(state => ['NoDevicesAvailable', 'NotConnected', 'Connecting', 'Connected'][state])
+    return GoogleCast.getCastState().then(
+      state =>
+        ['NoDevicesAvailable', 'NotConnected', 'Connecting', 'Connected'][
+          state
+        ],
+    )
   },
   castMedia(params: {
     mediaUrl: string,
-    title: string,
-    subtitle: string,
-    studio: string,
-    imageUrl: string,
-    posterUrl: string,
-    streamDuration: number,
-    playPosition: number,
+    title?: string,
+    subtitle?: string,
+    studio?: string,
+    imageUrl?: string,
+    posterUrl?: string,
+    contentType?: string,
+    streamDuration?: number,
+    playPosition?: number,
   }) {
     return GoogleCast.castMedia(params)
   },
@@ -63,7 +85,9 @@ export default {
   },
   launchExpandedControls: GoogleCast.launchExpandedControls,
   showIntroductoryOverlay: GoogleCast.showIntroductoryOverlay,
-
+  setVolume(volume: number) {
+    return GoogleCast.setVolume(volume)
+  },
   initChannel(namespace: string) {
     return GoogleCast.initChannel(namespace)
   },
@@ -89,6 +113,7 @@ export default {
   MEDIA_STATUS_UPDATED: GoogleCast.MEDIA_STATUS_UPDATED,
   MEDIA_PLAYBACK_STARTED: GoogleCast.MEDIA_PLAYBACK_STARTED,
   MEDIA_PLAYBACK_ENDED: GoogleCast.MEDIA_PLAYBACK_ENDED,
+  MEDIA_PROGRESS_UPDATED: GoogleCast.MEDIA_PROGRESS_UPDATED,
 
   CHANNEL_CONNECTED: GoogleCast.CHANNEL_CONNECTED,
   CHANNEL_DISCONNECTED: GoogleCast.CHANNEL_DISCONNECTED,
