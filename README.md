@@ -177,6 +177,8 @@ Finally, run `pod install`.
   ```java
   package com.foo;
 
+  import android.content.Context;
+  import com.google.android.gms.cast.framework.CastOptions;
   import com.reactnative.googlecast.GoogleCastOptionsProvider;
 
   public class CastOptionsProvider extends GoogleCastOptionsProvider {
@@ -196,6 +198,12 @@ Finally, run `pod install`.
   <meta-data
     android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
     android:value="com.foo.GoogleCastOptionsProvider" />
+  ```
+
+  as well as add this to the `app/build.gradle`:
+
+  ```gradle
+  implementation "com.google.android.gms:play-services-cast-framework:${rootProject.ext.castFrameworkVersion}"
   ```
 
 - Change your `MainActivity` to extend `GoogleCastActivity`.
@@ -261,10 +269,9 @@ GoogleCast.castMedia({
 - `GoogleCast.sendMessage('urn:x-cast:...', message)` - send message over the custom channel
 - `GoogleCast.deviceHasPlayServices()` - Check if the Android device has the Google Play Service installed (returns null on non Android devices).
 - `GoogleCast.showCastPicker()` - Custom method to manually pop the cast options picker. Not needed if you implement the button.
-- `GoogleCast.toggleSubtitles(enabled, languageCode)` **Android Only**
-  * Enables/Disables closed captions for the video. Enabling subtitles only results in them showing if the stream contains a caption track in the requested language.
-  * Param: `enabled` - Required. True to enable, False to disable capions
-  * Param: `languageCode` - Optional, used for finding the right captions track in the stream. If not provided the default value of `en` will be used (for English).
+- `GoogleCast.toggleSubtitles(enabled, languageCode)` - enables/disables closed captions for the video. Enabling subtitles only results in them showing if the stream contains a caption track in the requested language.
+  - Param: `enabled` - Required. `true` to enable, `false` to disable capions
+  - Param: `languageCode` - Optional, used for finding the right captions track in the stream. If not provided, the default value of `en` will be used (for English).
 
 ## Components
 
