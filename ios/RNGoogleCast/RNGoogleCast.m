@@ -9,6 +9,7 @@
   bool hasListeners;
   NSMutableDictionary *channels;
   GCKCastSession *castSession;
+  GCKMediaInformation *mediaInfo;
   bool playbackStarted;
   bool playbackEnded;
   NSUInteger currentItemID;
@@ -26,6 +27,11 @@ RCT_EXPORT_MODULE();
 - (instancetype)init {
   self = [super init];
   channels = [[NSMutableDictionary alloc] init];
+        
+  if([GCKCastContext.sharedInstance castState] == GCKCastStateConnected) {
+    castSession = [[GCKCastContext.sharedInstance sessionManager] currentCastSession];
+  }
+    
   return self;
 }
 
@@ -112,6 +118,35 @@ RCT_EXPORT_METHOD(launchExpandedControls) {
   });
 }
 
+RCT_EXPORT_METHOD(toggleSubtitles: (BOOL) enabled languageCode:(NSString *) languageCode) {
+  if (castSession == nil) return;
+
+  if (!enabled) {
+    [castSession.remoteMediaClient setActiveTrackIDs:@[]];
+    return;
+  }
+
+  NSArray *mediaTracks = mediaInfo.mediaTracks;
+  NSString *languageToSelect = languageCode != nil ? languageCode : DEFAULT_SUBTITLES_LANGUAGE;
+
+  if (mediaTracks == nil || [mediaTracks count] == 0) {
+    return;
+  }
+  
+  for(GCKMediaTrack *track in mediaTracks) {
+    if (track != nil && [[track languageCode] isEqualToString:languageToSelect]) {
+      [castSession.remoteMediaClient setActiveTrackIDs:@[@(track.identifier)]];
+      return;
+    }
+  }
+}
+
+RCT_EXPORT_METHOD(showCastPicker) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+[GCKCastContext.sharedInstance presentCastDialog];
+});
+}
+
 RCT_EXPORT_METHOD(showIntroductoryOverlay) {
   dispatch_async(dispatch_get_main_queue(), ^{
     [GCKCastContext.sharedInstance presentCastInstructionsViewControllerOnce];
@@ -154,12 +189,12 @@ RCT_EXPORT_METHOD(sendMessage: (NSString *)message
                   resolver: (RCTPromiseResolveBlock) resolve
                   rejecter: (RCTPromiseRejectBlock) reject) {
   GCKCastChannel *channel = channels[namespace];
-  
+
   if (!channel) {
     NSError *error = [NSError errorWithDomain:NSCocoaErrorDomain code:GCKErrorCodeChannelNotConnected userInfo:nil];
     return reject(@"no_channel", [NSString stringWithFormat:@"Channel for namespace %@ does not exist. Did you forget to call initChannel?", namespace], error);
   }
-  
+
   NSError *error;
   [channel sendTextMessage:message error:&error];
   if (error != nil) {
@@ -321,10 +356,10 @@ RCT_EXPORT_METHOD(setVolume : (float)volume) {
     playbackStarted = false;
     playbackEnded = false;
   }
-  
+
   double position = mediaStatus.streamPosition;
   double duration = mediaStatus.mediaInformation.streamDuration;
-  
+
   NSDictionary *status = @{
     @"playerState": @(mediaStatus.playerState),
     @"idleReason": @(mediaStatus.idleReason),
@@ -349,15 +384,17 @@ RCT_EXPORT_METHOD(setVolume : (float)volume) {
     [progressTimer invalidate];
     progressTimer = nil;
   }
-  
+
   if (!playbackStarted && mediaStatus.playerState == GCKMediaPlayerStatePlaying) {
     [self sendEventWithName:MEDIA_PLAYBACK_STARTED body:@{@"mediaStatus":status}];
     playbackStarted = true;
+    mediaInfo = mediaStatus.mediaInformation;
   }
 
   if (!playbackEnded && mediaStatus.idleReason == GCKMediaPlayerIdleReasonFinished) {
     [self sendEventWithName:MEDIA_PLAYBACK_ENDED body:@{@"mediaStatus":status}];
     playbackEnded = true;
+    mediaInfo = mediaStatus.mediaInformation;
   }
 }
 

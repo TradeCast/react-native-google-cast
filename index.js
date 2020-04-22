@@ -25,6 +25,27 @@ type CastState =
   | 'Connecting'
   | 'Connected'
 
+type TextTrackStyle = {
+  backgroundColor?: string,
+  edgeColor?: string,
+  edgeType?: 'depressed' | 'dropShadow' | 'none' | 'outline' | 'raised',
+  fontFamily?: string,
+  fontGenericFamily?:
+    | 'casual'
+    | 'cursive'
+    | 'monoSansSerif'
+    | 'monoSerif'
+    | 'sansSerif'
+    | 'serif'
+    | 'smallCaps',
+  fontScale?: number,
+  fontStyle?: 'bold' | 'boldItalic' | 'italic' | 'normal',
+  foregroundColor?: string,
+  windowColor?: string,
+  windowCornerRadius?: number,
+  windowType?: 'none' | 'normal' | 'rounded',
+}
+
 export default {
   getCastDevice(): Promise<CastDevice> {
     return GoogleCast.getCastDevice()
@@ -47,8 +68,22 @@ export default {
     contentType?: string,
     streamDuration?: number,
     playPosition?: number,
+    isLive?: boolean,
+    customData?: Object,
+    textTrackStyle?: TextTrackStyle,
   }) {
     return GoogleCast.castMedia(params)
+  },
+  /**
+  * Function that checks if a device has the Google Play Service installed and up-to-date
+  * @return {?boolean}
+  */
+  async deviceHasPlayServices(): ?boolean {
+    if (Platform.OS === 'android' || (Platform.isTV && !Platform.isTVOS)) {
+      return GoogleCast.deviceHasPlayServices();
+    }
+
+    return null;
   },
   /**
    * Ends the current session.
@@ -93,6 +128,18 @@ export default {
   },
   sendMessage(namespace: string, message: string) {
     return GoogleCast.sendMessage(message, namespace)
+  },
+  showCastPicker(){
+    GoogleCast.showCastPicker()
+  },
+  /**
+   * Enable/disable subtitles, optionally selecting a preferred subtitle language.
+   *
+   * @param {boolean} enabled
+   * @param {boolean} languageCode
+   */
+  toggleSubtitles(enabled: boolean, languageCode?: string) {
+    return GoogleCast.toggleSubtitles(enabled, languageCode)
   },
 
   // TODO use the same native event interface instead of hacking it here
