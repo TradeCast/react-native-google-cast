@@ -48,7 +48,11 @@ type TextTrackStyle = {
 
 export default {
   getCastDevice(): Promise<CastDevice> {
-    return GoogleCast.getCastDevice()
+    try {
+      return GoogleCast.getCastDevice()
+    } catch {
+      return undefined;
+    }
   },
   getCastState(): Promise<CastState> {
     return GoogleCast.getCastState().then(
